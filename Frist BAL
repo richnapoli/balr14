@@ -1,11 +1,21 @@
-This is a comment line
-* Load the fullword integer stored at the
-* location labeled 'ZIGGY' into general register 3:
-      L    3,ZIGGY
-      SLA  4,5             shift the value in general register 4 left by 5 bits
-      MVC  TARGET,SOURCE   move characters from location 'SOURCE' to 'TARGET'
-      AP   COUNT,=P'1'     add 1 to value in memory location 'COUNT' (packed decimal format)
-      B    NEXT            unconditional branch to label 'NEXT'
-HERE  EQU   *              This is a label
-      CLC   TARGET,=C'ADDRESS'  Compare memory location 'TARGET' to string 'ADDRESS'
-      BE    THERE               branch if equal to program label 'THERE'
+HELLO    CSECT               The name of this program is 'HELLO'
+*                            Register 15 points here on entry from OPSYS or caller.
+         STM   14,12,12(13)  Save registers 14,15, and 0 thru 12 in caller's Save area
+         LR    12,15         Set up base register with program's entry point address
+         USING HELLO,12      Tell assembler which register we are using for pgm. base
+         LA    15,SAVE       Now Point at our own save area
+         ST    15,8(13)      Set forward chain
+         ST    13,4(15)      Set back chain               
+         LR    13,15         Set R13 to address of new save area
+*                            -end of housekeeping -
+         WTO   'Hello World' Write To Operator  (Operating System macro)
+*
+         L     13,4(13)      restore address to caller-provided save area
+         XC    8(4,13),8(13) Clear forward chain
+         LM    14,12,12(13)  Restore registers as on entry
+         DROP  12            
+         SR    15,15         Set register 15 to 0 so that the return code (R15) is Zero
+         BR    14            Return to caller
+*           
+SAVE     DS    18F           Define 18 fullwords to save calling program registers 
+         END  HELLO          This is the end of the program
